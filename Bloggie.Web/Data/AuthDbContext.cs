@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Bloggie.Web.Data
 {
@@ -9,7 +10,13 @@ namespace Bloggie.Web.Data
         public AuthDbContext(DbContextOptions options) : base(options)
         {
         }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 
+        {
+
+            optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+
+        }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -46,13 +53,14 @@ namespace Bloggie.Web.Data
         
             builder.Entity<IdentityRole>().HasData(roles);
 
+            var superAdminUserId = "739e2127-4417-4ab2-a9fd-123feafbfeba";
             var superAdminUser = new IdentityUser
             {
                 UserName = "superadmin@bloggie.com",
                 Email = "superadmin@bloggie.com",
-                NormalizedEmail = "superadmin@bloggie.com",
-                NormalizedUserName = "superadmin@bloggie.com",
-                Id = "739e2127 - 4417 - 4ab2 - a9fd - 123feafbfeba",
+                NormalizedEmail = "superadmin@bloggie.com".ToUpper(),
+                NormalizedUserName = "superadmin@bloggie.com".ToUpper(),
+                Id = superAdminUserId,
             };
             superAdminUser.PasswordHash = new PasswordHasher<IdentityUser>().HashPassword(superAdminUser, "Superadmin123");
 
@@ -63,21 +71,21 @@ namespace Bloggie.Web.Data
                 new IdentityUserRole<string>
                 {
                     RoleId = userRoleId,
-                    UserId = superAdminUser.Id,
+                    UserId = superAdminUserId,
                 },
                 new IdentityUserRole<string>
                 {
                     RoleId = adminRoleId,
-                    UserId = superAdminUser.Id,
+                    UserId = superAdminUserId,
                 },
                 new IdentityUserRole<string>
                 {
                     RoleId = superAdminRoleId,
-                    UserId = superAdminUser.Id,
+                    UserId = superAdminUserId,
                 }
             };
 
-            builder.Entity<IdentityUserRole<String>>().HasData(superAdminRoles);
+            builder.Entity<IdentityUserRole<string>>().HasData(superAdminRoles);
         }
     }
 }
